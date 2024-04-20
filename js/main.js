@@ -1,6 +1,11 @@
 const productList = document.getElementById("productList");
 const cartItemsElement = document.getElementById("cartItems");
 const cartTotalElement = document.getElementById("cartTotal");
+let menu = document.querySelector(".navbar");
+
+let menuIcon = document.querySelector("#menu-icon");
+menuIcon.addEventListener("click", () => menu.classList.toggle("open-menu"));
+
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 // Ürünler
 const products = [
@@ -103,7 +108,6 @@ function addToCart(event) {
     // Sepette tıkladığımız ürün varsa bu ürünün miktarını bir arttırız
     if (exixtingItem) {
       exixtingItem.quantity++;
-      console.log(cart);
     } else {
       // Tıkladığımız ürün sepette yoksa yeni bir ürün şekilnde ekleriz
       const cartItem = {
@@ -113,16 +117,18 @@ function addToCart(event) {
         image: product.image,
         quantity: 1,
       };
+
+      // event.target.textContent = "Added";
       // Yeni oluşturduğumuz ürünü cart dizisine ekleriz.
       cart.push(cartItem);
-      console.log(cart);
     }
+    event.target.textContent = "Added";
+    // toplam miktarı günceller
+    updateCartIcon();
+    saveToLocalStorage();
+    renderCartItems();
+    calculateCartTotal();
   }
-  // toplam miktarı günceller
-  updateCartIcon();
-  saveToLocalStorage();
-  renderCartItems();
-  calculateCartTotal();
 }
 
 // Cart dizisinden ve localStoragedan silmek istediğimiz ürünü sildik ve sayfayı güncelledik
@@ -201,6 +207,7 @@ function renderCartItems() {
     const quantityInput = quantityInputs[i];
     quantityInput.addEventListener("change", changeQuantity);
   }
+  updateCartIcon();
 }
 // sepetteki toplam fiyatı hesaplar
 function calculateCartTotal() {
@@ -218,12 +225,22 @@ if (window.location.pathname.includes("cart.html")) {
   renderProducts();
 }
 
-const cartIcon = document.getElementById("cart-icon");
-
 function updateCartIcon() {
-  const totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartIcon = document.getElementById("cart-icon");
+  const i = document.querySelector(".bx-shopping-bag");
+  let totalQuantity = cart.reduce((sum, item) => sum + item.quantity, 0);
+  i.setAttribute("data-quantity", totalQuantity);
+  if (cart.length === 0) {
+    totalQuantity = 0;
+  }
   cartIcon.setAttribute("data-quantity", totalQuantity);
 }
+updateCartIcon();
+function updateCartIconOnCartChange() {
+  updateCartIcon();
+}
+window.addEventListener("storage", updateCartIconOnCartChange);
+
 renderProducts();
 renderCartItems();
 calculateCartTotal();
